@@ -66,11 +66,11 @@ CREATE TABLE teaching_activity (
 
 CREATE TABLE course_layout (
  course_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
- course_code VARCHAR(10) NOT NULL UNIQUE,
+ course_code VARCHAR(20) NOT NULL UNIQUE,
  course_name VARCHAR(100) NOT NULL UNIQUE,
  min_students INT NOT NULL,
  max_students INT NOT NULL,
- hp INT NOT NULL,
+ hp NUMERIC(2, 1) NOT NULL,
  version_start TIMESTAMP NOT NULL, 
  PRIMARY KEY (course_id)
 );

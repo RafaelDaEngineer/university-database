@@ -55,8 +55,8 @@ WHERE department_name = 'Computer Science';
 
 -- Insert course layouts
 INSERT INTO course_layout (course_code, course_name, min_students, max_students, hp, version_start) VALUES
-('IV1351', 'Data Storage Paradigms', 50, 250, 7, '2024-01-01 00:00:00'),
-('IX1500', 'Discrete Mathematics', 50, 150, 7, '2024-01-01 00:00:00');
+('IV1351', 'Data Storage Paradigms', 50, 250, 7.5, '2024-01-01 00:00:00'),
+('IX1500', 'Discrete Mathematics', 50, 150, 7.5, '2024-01-01 00:00:00');
 
 -- Insert course instances
 INSERT INTO course_instance (num_students, study_year, course_id) VALUES
