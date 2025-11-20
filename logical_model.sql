@@ -1,5 +1,5 @@
 -- =============================================
--- 1. CONSTANTS TABLE (FINAL)
+-- 1. CONSTANTS TABLE
 -- =============================================
 CREATE TABLE constants (
  constants_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
