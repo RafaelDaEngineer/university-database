@@ -10,3 +10,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: university_db
+
+    volumes:
+      - ./:/scripts
