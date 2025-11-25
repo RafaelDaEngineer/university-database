@@ -9,19 +9,30 @@ SELECT
     sp.study_period_name AS "Period",
     ci.num_students AS "# Students",
 
-    -- Activity Columns (Pivoting rows to columns)
+    -- Activity Columns (Only sum specific activities from the table)
     COALESCE(SUM(CASE WHEN ta.activity_name = 'Lecture' THEN pa.planned_hours * ta.factor END), 0) AS "Lecture",
     COALESCE(SUM(CASE WHEN ta.activity_name = 'Tutorial' THEN pa.planned_hours * ta.factor END), 0) AS "Tutorial",
     COALESCE(SUM(CASE WHEN ta.activity_name = 'Lab Supervision' THEN pa.planned_hours * ta.factor END), 0) AS "Lab",
     COALESCE(SUM(CASE WHEN ta.activity_name = 'Seminar' THEN pa.planned_hours * ta.factor END), 0) AS "Seminar",
     
+    -- Other Overhead: Exclude Admin/Grading because we use formulas for those below
+    COALESCE(SUM(CASE 
+        WHEN ta.activity_name NOT IN ('Lecture', 'Tutorial', 'Lab Supervision', 'Seminar', 'Course Admin', 'Grading') 
+        THEN pa.planned_hours * ta.factor 
+        ELSE 0 
+    END), 0) AS "Other Overhead",
+    
     -- Admin & Exam (Calculated using formulas from PDF)
     ROUND((const.adm_hour_mul_hp * cl.hp) + const.adm_hour_add + (const.adm_hour_mul_student * ci.num_students), 2) AS "Admin",
     ROUND(const.exam_hour_add + (const.exam_hour_mul * ci.num_students), 2) AS "Exam",
 
-    -- Total Sum
+    -- Total Sum: Sum of Table Activities (excluding Admin/Grading) + The Two Formulas
     ROUND(
-        COALESCE(SUM(pa.planned_hours * ta.factor), 0) + 
+        COALESCE(SUM(CASE 
+            WHEN ta.activity_name NOT IN ('Course Admin', 'Grading') 
+            THEN pa.planned_hours * ta.factor 
+            ELSE 0 
+        END), 0) + 
         ((const.adm_hour_mul_hp * cl.hp) + const.adm_hour_add + (const.adm_hour_mul_student * ci.num_students)) +
         (const.exam_hour_add + (const.exam_hour_mul * ci.num_students)), 2
     ) AS "Total Hours"

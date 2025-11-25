@@ -1,0 +1,20 @@
+-- QUERY 4: TEACHERS WITH MORE THAN N COURSES IN A PERIOD
+-- Matches PDF Table 7
+SELECT 
+    e.employment_id AS "Employment ID",
+    p.first_name || ' ' || p.last_name AS "Teacher's Name",
+    sp.study_period_name AS "Period",
+    COUNT(DISTINCT ec.instance_id) AS "No of courses"
+FROM employee e
+JOIN person p ON e.person_id = p.person_id
+JOIN employee_course ec ON e.employment_id = ec.employment_id
+JOIN course_instance ci ON ec.instance_id = ci.instance_id
+JOIN course_study cs ON ci.instance_id = cs.instance_id
+JOIN study_period sp ON cs.study_period_id = sp.study_period_id
+WHERE ci.study_year = '2025'
+GROUP BY e.employment_id, p.first_name, p.last_name, sp.study_period_name
+-- The instruction says "more than a specific number". 
+-- In this example, we check for teachers with > 1 course to see results from our dummy data.
+-- You can change 1 to 2 or 3 as needed.
+HAVING COUNT(DISTINCT ec.instance_id) > 1 
+ORDER BY "No of courses" DESC;

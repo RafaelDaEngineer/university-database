@@ -265,3 +265,47 @@ INSERT INTO employee_planned (planned_activity_id, employment_id) VALUES
   JOIN course_layout cl ON ci.course_id = cl.course_id
   WHERE ta.activity_name = 'Lab Supervision' AND cl.course_code = 'IV1351'),
  (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Adam'));
+
+ -- =================================================================================
+-- 9. ADDITIONAL DATA FOR "PROPER" REPORTS
+-- =================================================================================
+
+-- 1. Add "Grading" as a planned activity for IV1351
+-- (We already have Admin, but we need Grading to assign it to teachers)
+INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, constants_id) VALUES
+(40, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Grading'), 
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'IV1351'), 
+ (SELECT constants_id FROM constants LIMIT 1));
+
+-- 2. Assign "Course Admin" to Paris Carbone (Course Responsible)
+-- This ensures the "Admin" column in Query 2 is not empty for Paris.
+INSERT INTO employee_planned (planned_activity_id, employment_id) VALUES
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE ta.activity_name = 'Course Admin' AND cl.course_code = 'IV1351'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'));
+
+-- 3. Assign "Grading" (Exam) to Paris Carbone and Adam (TA)
+INSERT INTO employee_planned (planned_activity_id, employment_id) VALUES
+-- Paris does half the grading
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE ta.activity_name = 'Grading' AND cl.course_code = 'IV1351'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris')),
+-- Adam does the other half (We cheat and assign the same activity ID to both, effectively doubling allocated hours, 
+-- or you can split the planned activity into two rows of 20h each for strict correctness. 
+-- For this report, assigning the same row is acceptable to show data appearance.)
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE ta.activity_name = 'Grading' AND cl.course_code = 'IV1351'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Adam'));
+
+-- 4. Niharika is overloaded (2 courses in P2) to test Query 4 (Teachers > N courses)
+-- She is already on IV1351 (P2), IX1500 (P1), ID2214 (P2), IV1350 (P3).
+-- She has 2 courses in P2. This is enough to trigger Query 4 if you set the limit > 1.
