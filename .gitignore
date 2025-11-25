@@ -1,0 +1,39 @@
+# --- Database & Docker ---
+# The heavy database files created by Docker (CRITICAL to ignore)
+postgres_data/
+
+# Any optional environment variables file containing passwords
+.env
+
+# Any manual SQL dumps/backups you might create later
+*.dump
+*.sql.gz
+
+# --- Mac OS System Files ---
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# --- IDEs & Editors ---
+# IntelliJ / WebStorm / DataGrip
+.idea/
+*.iml
+
+# VS Code
+.vscode/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# --- Logs ---
+*.log
+npm-debug.log*
+yarn-debug.log*
+docker-debug.log*
+
+# --- Java (If you use it for Task 3 later) ---
+target/
+build/
+*.class
