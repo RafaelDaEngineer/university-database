@@ -29,6 +29,24 @@ cd conceptual-model
 2. Set up your database connection
 3. Run the initial schema scripts
 
+### Docker
+1. Start the DB
+```bash
+docker-compose up -d
+```
+2. Enter Docker instance shell
+```bash
+docker exec -it iv1351_db /bin/bash
+```
+3. Return to Mac
+```bash
+exit
+```
+3. Shut down the DB
+```bash
+docker-compose down
+````
+
 ## Editing Instructions for the Group
 
 ### Before Making Changes
