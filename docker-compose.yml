@@ -1,7 +1,6 @@
 services:
   db:
     # "latest" will automatically pull the newest version (e.g., Postgres 16, 17, or 18)
-    # It automatically detects your M1 chip and downloads the ARM64 version.
     image: postgres:latest
     container_name: iv1351_db
     restart: always
@@ -10,12 +9,4 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpassword
-      POSTGRES_DB: school_db
-      
-    # Maps Mac port 5432 to Container port 5432
-    ports:
-      - "5432:5432"
-      
-    # PERSISTENCE: This saves your data to a folder on your Mac so it survives restarts.
-    volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      POSTGRES_DB: university_db
