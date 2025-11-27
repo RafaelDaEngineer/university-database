@@ -1,15 +1,17 @@
 -- QUERY 1: PLANNED HOURS PER COURSE INSTANCE
+-- takes the first (most recent) constants row
 WITH CurrentConstants AS (
     SELECT * FROM constants ORDER BY constants_id DESC LIMIT 1
 )
 SELECT 
+    -- create columns "as"
     cl.course_code AS "Course Code",
     ci.instance_id AS "Instance ID",
     cl.hp AS "HP",
     sp.study_period_name AS "Period",
     ci.num_students AS "# Students",
 
-    -- Activity Columns (Only sum specific activities from the table)
+    -- Activity Columns (Only sum specific activities from the table, the .factor are different for each activity)
     COALESCE(SUM(CASE WHEN ta.activity_name = 'Lecture' THEN pa.planned_hours * ta.factor END), 0) AS "Lecture",
     COALESCE(SUM(CASE WHEN ta.activity_name = 'Tutorial' THEN pa.planned_hours * ta.factor END), 0) AS "Tutorial",
     COALESCE(SUM(CASE WHEN ta.activity_name = 'Lab Supervision' THEN pa.planned_hours * ta.factor END), 0) AS "Lab",
