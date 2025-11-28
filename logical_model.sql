@@ -155,6 +155,7 @@ CREATE TABLE planned_activity (
 CREATE TABLE employee_planned (
   planned_activity_id INT NOT NULL,
   employment_id INT NOT NULL,
+  allocated_hours INT NOT NULL,
   PRIMARY KEY (planned_activity_id, employment_id),
   FOREIGN KEY (planned_activity_id) REFERENCES planned_activity(planned_activity_id),
   FOREIGN KEY (employment_id) REFERENCES employee(employment_id)

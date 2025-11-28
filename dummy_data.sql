@@ -124,9 +124,9 @@ INSERT INTO employee (manager_id, job_id, department_id, person_id, salary_id) V
 -- 1. Course Layouts
 INSERT INTO course_layout (course_code, course_name, min_students, max_students, hp, version_start) VALUES
 ('IV1351', 'Data Storage Paradigms', 20, 250, 7.5, '2023-01-01'),
-('IX1500', 'Discrete Mathematics', 20, 150, 7.5, '2023-01-01'), -- PDF Table 4 Example
-('ID2214', 'Artificial Intelligence', 10, 100, 7.5, '2023-01-01'), -- PDF Table 6 Example
-('IV1350', 'Object Oriented Prog', 50, 300, 7.5, '2023-01-01');  -- PDF Table 6 Example
+('IX1500', 'Discrete Mathematics', 20, 150, 7.5, '2023-01-01'), 
+('ID2214', 'Artificial Intelligence', 10, 100, 7.5, '2023-01-01'),
+('IV1350', 'Object Oriented Prog', 50, 300, 7.5, '2023-01-01');
 
 -- 2. Course Instances (Current Year 2025)
 INSERT INTO course_instance (num_students, study_year, course_id) VALUES
@@ -185,7 +185,6 @@ INSERT INTO employee_course (employment_id, instance_id) VALUES
 -- 7. PLANNED ACTIVITIES (Budgeting Hours)
 -- =================================================================================
 -- Note: "Planned Hours" * "Factor" = Total Hours seen in the PDF Reports.
--- Below I insert the raw Planned Hours needed to result in the PDF Table values.
 
 -- --- COURSE: IV1351 ---
 INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, constants_id) VALUES
@@ -225,87 +224,86 @@ INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, 
 -- 8. LINKING EMPLOYEES TO PLANNED ACTIVITIES (Allocating the hours)
 -- =================================================================================
 
--- 1. Paris Carbone does the Lectures for IV1351
-INSERT INTO employee_planned (planned_activity_id, employment_id) VALUES
+-- 1. Paris Carbone does the Lectures for IV1351 (All 20h)
+INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hours) VALUES
 ((SELECT planned_activity_id FROM planned_activity pa 
   JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
   JOIN course_instance ci ON pa.instance_id = ci.instance_id
   JOIN course_layout cl ON ci.course_id = cl.course_id
   WHERE ta.activity_name = 'Lecture' AND cl.course_code = 'IV1351'),
- (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'));
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ 20);
 
--- 2. Leif and Niharika split Seminars for IV1351
-INSERT INTO employee_planned (planned_activity_id, employment_id) VALUES
+-- 2. Leif and Niharika split Seminars for IV1351 (80h Total -> 40h each)
+INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hours) VALUES
 ((SELECT planned_activity_id FROM planned_activity pa 
   JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
   JOIN course_instance ci ON pa.instance_id = ci.instance_id
   JOIN course_layout cl ON ci.course_id = cl.course_id
   WHERE ta.activity_name = 'Seminar' AND cl.course_code = 'IV1351'),
- (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Leif')),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Leif'),
+ 40),
  
 ((SELECT planned_activity_id FROM planned_activity pa 
   JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
   JOIN course_instance ci ON pa.instance_id = ci.instance_id
   JOIN course_layout cl ON ci.course_id = cl.course_id
   WHERE ta.activity_name = 'Seminar' AND cl.course_code = 'IV1351'),
- (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Niharika'));
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Niharika'),
+ 40);
 
--- 3. Brian and Adam (TAs) split Labs for IV1351
-INSERT INTO employee_planned (planned_activity_id, employment_id) VALUES
+-- 3. Brian and Adam (TAs) split Labs for IV1351 (40h Total -> 20h each)
+INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hours) VALUES
 ((SELECT planned_activity_id FROM planned_activity pa 
   JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
   JOIN course_instance ci ON pa.instance_id = ci.instance_id
   JOIN course_layout cl ON ci.course_id = cl.course_id
   WHERE ta.activity_name = 'Lab Supervision' AND cl.course_code = 'IV1351'),
- (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Brian')),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Brian'),
+ 20),
 
 ((SELECT planned_activity_id FROM planned_activity pa 
   JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
   JOIN course_instance ci ON pa.instance_id = ci.instance_id
   JOIN course_layout cl ON ci.course_id = cl.course_id
   WHERE ta.activity_name = 'Lab Supervision' AND cl.course_code = 'IV1351'),
- (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Adam'));
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Adam'),
+ 20);
 
  -- =================================================================================
 -- 9. ADDITIONAL DATA FOR "PROPER" REPORTS
 -- =================================================================================
 
 -- 1. Add "Grading" as a planned activity for IV1351
--- (We already have Admin, but we need Grading to assign it to teachers)
 INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, constants_id) VALUES
 (40, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Grading'), 
  (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'IV1351'), 
  (SELECT constants_id FROM constants LIMIT 1));
 
--- 2. Assign "Course Admin" to Paris Carbone (Course Responsible)
--- This ensures the "Admin" column in Query 2 is not empty for Paris.
-INSERT INTO employee_planned (planned_activity_id, employment_id) VALUES
+-- 2. Assign "Course Admin" to Paris Carbone (Course Responsible) (100h)
+INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hours) VALUES
 ((SELECT planned_activity_id FROM planned_activity pa 
   JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
   JOIN course_instance ci ON pa.instance_id = ci.instance_id
   JOIN course_layout cl ON ci.course_id = cl.course_id
   WHERE ta.activity_name = 'Course Admin' AND cl.course_code = 'IV1351'),
- (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'));
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ 100);
 
--- 3. Assign "Grading" (Exam) to Paris Carbone and Adam (TA)
-INSERT INTO employee_planned (planned_activity_id, employment_id) VALUES
--- Paris does half the grading
+-- 3. Assign "Grading" (Exam) to Paris Carbone and Adam (TA) (40h Total -> 20h each)
+INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hours) VALUES
 ((SELECT planned_activity_id FROM planned_activity pa 
   JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
   JOIN course_instance ci ON pa.instance_id = ci.instance_id
   JOIN course_layout cl ON ci.course_id = cl.course_id
   WHERE ta.activity_name = 'Grading' AND cl.course_code = 'IV1351'),
- (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris')),
--- Adam does the other half (We cheat and assign the same activity ID to both, effectively doubling allocated hours, 
--- or you can split the planned activity into two rows of 20h each for strict correctness. 
--- For this report, assigning the same row is acceptable to show data appearance.)
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ 20),
+ 
 ((SELECT planned_activity_id FROM planned_activity pa 
   JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
   JOIN course_instance ci ON pa.instance_id = ci.instance_id
   JOIN course_layout cl ON ci.course_id = cl.course_id
   WHERE ta.activity_name = 'Grading' AND cl.course_code = 'IV1351'),
- (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Adam'));
-
--- 4. Niharika is overloaded (2 courses in P2) to test Query 4 (Teachers > N courses)
--- She is already on IV1351 (P2), IX1500 (P1), ID2214 (P2), IV1350 (P3).
--- She has 2 courses in P2. This is enough to trigger Query 4 if you set the limit > 1.
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Adam'),
+ 20);

@@ -40,13 +40,13 @@ SELECT
     ) AS "Total Hours"
 
 FROM course_instance ci
-JOIN course_layout cl ON ci.course_id = cl.course_id
-JOIN course_study cs ON ci.instance_id = cs.instance_id
-JOIN study_period sp ON cs.study_period_id = sp.study_period_id
-LEFT JOIN planned_activity pa ON ci.instance_id = pa.instance_id
-LEFT JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+JOIN course_layout cl ON ci.course_id = cl.course_id -- "this course instance, what course_layout is it?"
+JOIN course_study cs ON ci.instance_id = cs.instance_id -- "this course instance, what study_period is it?"
+JOIN study_period sp ON cs.study_period_id = sp.study_period_id -- "this study_period instance, what study_period is it?"
+LEFT JOIN planned_activity pa ON ci.instance_id = pa.instance_id -- "this course instance, what planned_activity is it?" (LEFT JOIN because some course instances may not have planned_activity yet, but we still include those course instances)
+LEFT JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id -- "this planned_activity, what teaching_activity is it?" (LEFT JOIN because some planned_activities may not have teaching_activity yet, but we still include those planned_activities)
 CROSS JOIN CurrentConstants const
-WHERE ci.study_year = '2025'
+WHERE ci.study_year = '2025' -- filtering for 
 GROUP BY cl.course_code, ci.instance_id, cl.hp, sp.study_period_name, ci.num_students, 
          const.adm_hour_mul_hp, const.adm_hour_add, const.adm_hour_mul_student, const.exam_hour_add, const.exam_hour_mul
 ORDER BY cl.course_code;
