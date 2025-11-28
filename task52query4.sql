@@ -10,9 +10,9 @@ JOIN employee_course ec ON e.employment_id = ec.employment_id
 JOIN course_instance ci ON ec.instance_id = ci.instance_id
 JOIN course_study cs ON ci.instance_id = cs.instance_id
 JOIN study_period sp ON cs.study_period_id = sp.study_period_id
-WHERE ci.study_year = '2025'
+WHERE ci.study_year = '2025' AND cs.study_period_id = 2
 GROUP BY e.employment_id, p.first_name, p.last_name, sp.study_period_name
 -- The instruction says "more than a specific number". 
--- In this example, we check for teachers with > 1 course to see results from our dummy data.
-HAVING COUNT(DISTINCT ec.instance_id) > 1 
+-- In this case, we check for teachers with > 1 course to see results from our dummy data.
+HAVING COUNT(DISTINCT ec.instance_id) > 1
 ORDER BY "No of courses" DESC;
