@@ -1,4 +1,4 @@
--- 1. Measure BEFORE (Take a screenshot of the output!)
+-- 1. Measure BEFORE 
 EXPLAIN ANALYZE
 SELECT 
     e.employment_id,
@@ -15,7 +15,7 @@ HAVING COUNT(DISTINCT ec.instance_id) > 1;
 CREATE INDEX idx_course_instance_year ON course_instance(study_year);
 CREATE INDEX idx_employee_course_ref ON employee_course(instance_id, employment_id);
 
--- 3. Measure AFTER (Take a screenshot!)
+-- 3. Measure AFTER 
 EXPLAIN ANALYZE
 SELECT 
     e.employment_id,
