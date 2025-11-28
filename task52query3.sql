@@ -1,5 +1,4 @@
 -- QUERY 3: TOTAL ALLOCATED HOURS PER TEACHER (CURRENT YEAR)
--- Matches PDF Table 6
 SELECT 
     cl.course_code AS "Course Code",
     ci.instance_id AS "Course Instance ID",

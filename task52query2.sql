@@ -1,5 +1,4 @@
 -- QUERY 2: ACTUAL ALLOCATED HOURS PER TEACHER PER COURSE
--- Matches PDF Table 5
 SELECT 
     cl.course_code AS "Course Code",
     ci.instance_id AS "Course Instance ID",
