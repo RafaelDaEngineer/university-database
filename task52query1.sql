@@ -24,7 +24,7 @@ SELECT
         ELSE 0 
     END), 0) AS "Other Overhead",
     
-    -- Admin & Exam (Calculated using formulas from PDF)
+    -- Admin & Exam 
     ROUND((const.adm_hour_mul_hp * cl.hp) + const.adm_hour_add + (const.adm_hour_mul_student * ci.num_students), 2) AS "Admin",
     ROUND(const.exam_hour_add + (const.exam_hour_mul * ci.num_students), 2) AS "Exam",
 
