@@ -34,6 +34,6 @@ JOIN course_instance ci ON pa.instance_id = ci.instance_id
 JOIN course_layout cl ON ci.course_id = cl.course_id
 JOIN course_study cs ON ci.instance_id = cs.instance_id
 JOIN study_period sp ON cs.study_period_id = sp.study_period_id
-WHERE ci.study_year = '2025'
+WHERE ci.study_year = '2025' AND p.first_name = 'Niharika' AND p.last_name = 'Gauraha'
 GROUP BY cl.course_code, ci.instance_id, cl.hp, sp.study_period_name, p.first_name, p.last_name
 ORDER BY p.last_name, sp.study_period_name;

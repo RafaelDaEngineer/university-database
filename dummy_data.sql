@@ -215,10 +215,20 @@ INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, 
 
 -- --- COURSE: IX1500 (Discrete Math) ---
 INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, constants_id) VALUES
--- Lecture: 44h * 3.6 = 158.4h
-(44, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Lecture'), 
- (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'IX1500'), 
+-- Lecture
+(44, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Lecture'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'IX1500'),
+ (SELECT constants_id FROM constants LIMIT 1)),
+-- Course Admin / Overhead
+(100, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Course Admin'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'IX1500'),
+ (SELECT constants_id FROM constants LIMIT 1)),
+-- Grading / Exam
+(73, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Grading'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'IX1500'),
  (SELECT constants_id FROM constants LIMIT 1));
+
+
 
 -- =================================================================================
 -- 8. LINKING EMPLOYEES TO PLANNED ACTIVITIES (Allocating the hours)
@@ -307,3 +317,30 @@ INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hour
   WHERE ta.activity_name = 'Grading' AND cl.course_code = 'IV1351'),
  (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Adam'),
  20);
+
+ -- Assign IX1500 activities to Niharika
+INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hours) VALUES
+-- Lecture
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE cl.course_code = 'IX1500' AND ta.activity_name = 'Lecture'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Niharika'),
+ 44),
+-- Course Admin 
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE cl.course_code = 'IX1500' AND ta.activity_name = 'Course Admin'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Niharika'),
+ 100),
+-- Exam
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE cl.course_code = 'IX1500' AND ta.activity_name = 'Grading'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Niharika'),
+ 73);
