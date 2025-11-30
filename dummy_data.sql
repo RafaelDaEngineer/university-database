@@ -22,7 +22,7 @@ INSERT INTO skill_set (skill_name) VALUES
 ('SQL'), ('Java'), ('Python'), ('Project Management');
 
 -- 4. Teaching Activities & Multipliers
--- Matches PDF Table 2 + "Other" for overhead
+
 INSERT INTO teaching_activity (activity_name, factor) VALUES
 ('Lecture', 3.6), 
 ('Lab Supervision', 2.4), 
@@ -42,7 +42,7 @@ INSERT INTO salary_info (start_date, salary) VALUES
 ('2023-01-01', 32000); -- TA/PhD
 
 -- =================================================================================
--- 3. PEOPLE (Matches PDF Table 5 & 6 Examples)
+-- 3. PEOPLE 
 -- =================================================================================
 
 INSERT INTO person (personal_number, first_name, last_name, address) VALUES
@@ -118,7 +118,7 @@ INSERT INTO employee (manager_id, job_id, department_id, person_id, salary_id) V
  (SELECT salary_id FROM salary_info WHERE salary = 32000));
 
 -- =================================================================================
--- 5. COURSES & INSTANCES (Matches PDF Table 4)
+-- 5. COURSES & INSTANCES 
 -- =================================================================================
 
 -- 1. Course Layouts
@@ -159,7 +159,7 @@ INSERT INTO course_study (study_period_id, instance_id) VALUES
 -- =================================================================================
 
 INSERT INTO employee_course (employment_id, instance_id) VALUES
--- Paris, Leif, Niharika, Brian, Adam ALL on IV1351 (Matches PDF Table 5)
+-- Paris, Leif, Niharika, Brian, Adam ALL on IV1351 
 ((SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
  (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'IV1351')),
 ((SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Leif'),
@@ -184,7 +184,7 @@ INSERT INTO employee_course (employment_id, instance_id) VALUES
 -- =================================================================================
 -- 7. PLANNED ACTIVITIES (Budgeting Hours)
 -- =================================================================================
--- Note: "Planned Hours" * "Factor" = Total Hours seen in the PDF Reports.
+-- Note: "Planned Hours" * "Factor" = Total Hours 
 
 -- --- COURSE: IV1351 ---
 INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, constants_id) VALUES

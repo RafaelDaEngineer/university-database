@@ -7,24 +7,24 @@ SELECT
     j.job_name AS "Designation",
 
     -- Breakdowns using ALLOCATED hours 
-    COALESCE(SUM(CASE WHEN ta.activity_name = 'Lecture' THEN pa.planned_hours * ta.factor END), 0) AS "Lecture Hours",
-    COALESCE(SUM(CASE WHEN ta.activity_name = 'Tutorial' THEN pa.planned_hours * ta.factor END), 0) AS "Tutorial Hours",
-    COALESCE(SUM(CASE WHEN ta.activity_name = 'Lab Supervision' THEN pa.planned_hours * ta.factor END), 0) AS "Lab Hours",
-    COALESCE(SUM(CASE WHEN ta.activity_name = 'Seminar' THEN pa.planned_hours * ta.factor END), 0) AS "Seminar Hours",
+    COALESCE(SUM(CASE WHEN ta.activity_name = 'Lecture' THEN ep.allocated_hours * ta.factor END), 0) AS "Lecture Hours",
+    COALESCE(SUM(CASE WHEN ta.activity_name = 'Tutorial' THEN ep.allocated_hours * ta.factor END), 0) AS "Tutorial Hours",
+    COALESCE(SUM(CASE WHEN ta.activity_name = 'Lab Supervision' THEN ep.allocated_hours * ta.factor END), 0) AS "Lab Hours",
+    COALESCE(SUM(CASE WHEN ta.activity_name = 'Seminar' THEN ep.allocated_hours * ta.factor END), 0) AS "Seminar Hours",
 
     -- "Other" (Any generic activity)
     COALESCE(SUM(CASE 
         WHEN ta.activity_name NOT IN ('Lecture', 'Tutorial', 'Lab Supervision', 'Seminar', 'Course Admin', 'Grading') 
-        THEN pa.planned_hours * ta.factor 
+        THEN ep.allocated_hours * ta.factor 
         ELSE 0 
     END), 0) AS "Other Overhead",
 
     -- Specific Admin/Exam activities assigned to this person
-    COALESCE(SUM(CASE WHEN ta.activity_name = 'Course Admin' THEN pa.planned_hours * ta.factor END), 0) AS "Admin",
-    COALESCE(SUM(CASE WHEN ta.activity_name = 'Grading' THEN pa.planned_hours * ta.factor END), 0) AS "Exam",
+    COALESCE(SUM(CASE WHEN ta.activity_name = 'Course Admin' THEN ep.allocated_hours * ta.factor END), 0) AS "Admin",
+    COALESCE(SUM(CASE WHEN ta.activity_name = 'Grading' THEN ep.allocated_hours * ta.factor END), 0) AS "Exam",
 
     -- Total Allocated for this person
-    COALESCE(SUM(pa.planned_hours * ta.factor), 0) AS "Total"
+    COALESCE(SUM(ep.allocated_hours * ta.factor), 0) AS "Total"
 
 FROM course_instance ci
 JOIN course_layout cl ON ci.course_id = cl.course_id
