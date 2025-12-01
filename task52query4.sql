@@ -1,3 +1,7 @@
+-- identifies teachers who are assigned to more than a specific number of courses (currently set to 1) 
+-- during a single study period. 
+-- this helps the university quickly spot potential scheduling conflicts or teachers who might be overworked.
+
 -- QUERY 4: TEACHERS WITH MORE THAN N COURSES IN A PERIOD
 SELECT 
     e.employment_id AS "Employment ID",

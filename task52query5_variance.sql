@@ -1,3 +1,6 @@
+-- detects planning errors by comparing the hours originally planned for a course against the hours actually assigned to teachers. 
+-- highlights any course where the difference (variance) between the plan and reality exceeds 15%, signaling a need for review.
+
 -- QUERY 5: Variance > 15% between Planned and Allocated Hours
 WITH PlannedStats AS (
     -- Calculate Total Planned Hours (with factors) per instance

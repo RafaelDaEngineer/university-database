@@ -1,4 +1,8 @@
 -- QUERY 1: PLANNED HOURS PER COURSE INSTANCE
+-- generates a report showing the total planned work hours required for every course instance in the current year. 
+-- sums up scheduled activities (lectures etc) and uses the math formulas to estimate the time needed for grading 
+-- exams and administration.
+
 -- takes the first (most recent) constants row
 WITH CurrentConstants AS (
     SELECT * FROM constants ORDER BY constants_id DESC LIMIT 1

@@ -1,3 +1,6 @@
+-- demonstrates how to make the "Overloaded Teachers" search run faster by adding specific search shortcuts (indices) to the database. 
+-- runs a performance test before and after adding the shortcuts to prove the speed improvement.
+
 -- 1. Measure BEFORE 
 EXPLAIN ANALYZE
 SELECT 

@@ -1,3 +1,6 @@
+-- speeds up the complex "Planned Hours" report by saving the calculation results into a saved snapshot (Materialized View) 
+--instead of recalculating them from scratch every time. This is used for heavy reports that are read often but updated rarely.
+
 EXPLAIN ANALYZE
 
 CREATE MATERIALIZED VIEW planned_hours_report AS

@@ -1,3 +1,7 @@
+-- reports the actual hours assigned to each teacher for a specific course, broken down by 
+-- activity type (like "Lecture" or "Lab"). 
+-- allows management to see exactly who is teaching what and how the work is distributed within a single course.
+
 -- QUERY 2: ACTUAL ALLOCATED HOURS PER TEACHER PER COURSE
 SELECT 
     cl.course_code AS "Course Code",

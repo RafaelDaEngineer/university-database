@@ -1,3 +1,6 @@
+-- calculates the total work hours allocated to a specific teacher across all their courses for the current year. 
+-- provides a summary of an individual's total teaching burden to help with payroll or workload planning.
+
 -- QUERY 3: TOTAL ALLOCATED HOURS PER TEACHER (CURRENT YEAR)
 SELECT 
     cl.course_code AS "Course Code",
