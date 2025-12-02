@@ -129,7 +129,8 @@ INSERT INTO course_layout (course_code, course_name, min_students, max_students,
 ('IV1350', 'Object Oriented Prog', 50, 300, 7.5, '2023-01-01'),
 ('DD1337', 'Database Systems', 30, 200, 7.5, '2023-01-01'),
 ('DD1338', 'Advanced Databases', 20, 150, 7.5, '2023-01-01'),
-('DD1339', 'Database Design', 25, 180, 7.5, '2023-01-01');
+('DD1339', 'Database Design', 25, 180, 7.5, '2023-01-01'),
+('ID1201', 'Programming Fundamentals', 40, 200, 7.5, '2023-01-01');
 
 -- 2. Course Instances (Current Year 2025)
 INSERT INTO course_instance (num_students, study_year, course_id) VALUES
@@ -146,7 +147,9 @@ INSERT INTO course_instance (num_students, study_year, course_id) VALUES
 -- DD1338 (P2) - Additional course for trigger test
 (90,  '2025', (SELECT course_id FROM course_layout WHERE course_code = 'DD1338')),
 -- DD1339 (P2) - This will be the 5th course attempt (should fail)
-(85,  '2025', (SELECT course_id FROM course_layout WHERE course_code = 'DD1339'));
+(85,  '2025', (SELECT course_id FROM course_layout WHERE course_code = 'DD1339')),
+-- ID1201 (P1) - Additional course for Paris in P1
+(180, '2025', (SELECT course_id FROM course_layout WHERE course_code = 'ID1201'));
 
 -- 3. Link Instances to Study Periods
 INSERT INTO course_study (study_period_id, instance_id) VALUES
@@ -170,7 +173,10 @@ INSERT INTO course_study (study_period_id, instance_id) VALUES
  (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'DD1338')),
 -- DD1339 in P2 - This will be the 5th course attempt (should fail)
 ((SELECT study_period_id FROM study_period WHERE study_period_name = 'P2'),
- (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'DD1339'));
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'DD1339')),
+-- ID1201 in P1 - Additional course for Paris in P1
+((SELECT study_period_id FROM study_period WHERE study_period_name = 'P1'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'ID1201'));
 
 -- =================================================================================
 -- 6. EMPLOYEE COURSE ASSIGNMENTS (Who is "Allocated" to the course?)
@@ -205,7 +211,18 @@ INSERT INTO employee_course (employment_id, instance_id) VALUES
 
 -- Niharika on DD1338 in P2 (4th course in P2 - at the limit, should succeed)
 ((SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Niharika'),
- (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'DD1338'));
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'DD1338')),
+
+-- Paris Carbone on ID2214 in P2 (2nd course in P2 - will show up in query 4)
+((SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'ID2214')),
+
+-- Paris Carbone on IX1500 in P1 (for testing query 4 with different periods)
+((SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'IX1500')),
+-- Paris Carbone on ID1201 in P1 (2nd course in P1 - will show up in query 4 for P1)
+((SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'ID1201'));
 
 -- =================================================================================
 -- TRIGGER TEST: Attempt to assign 5th course to Niharika in P2 (should FAIL)
@@ -304,6 +321,30 @@ INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, 
  (SELECT constants_id FROM constants LIMIT 1)),
 (45, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Course Admin'),
  (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'DD1338'),
+ (SELECT constants_id FROM constants LIMIT 1));
+
+-- --- COURSE: ID2214 (Artificial Intelligence) - P2 ---
+INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, constants_id) VALUES
+(35, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Lecture'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'ID2214'),
+ (SELECT constants_id FROM constants LIMIT 1)),
+(60, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Lab Supervision'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'ID2214'),
+ (SELECT constants_id FROM constants LIMIT 1)),
+(80, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Course Admin'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'ID2214'),
+ (SELECT constants_id FROM constants LIMIT 1));
+
+-- --- COURSE: ID1201 (Programming Fundamentals) - P1 ---
+INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, constants_id) VALUES
+(40, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Lecture'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'ID1201'),
+ (SELECT constants_id FROM constants LIMIT 1)),
+(70, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Lab Supervision'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'ID1201'),
+ (SELECT constants_id FROM constants LIMIT 1)),
+(90, (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = 'Course Admin'),
+ (SELECT instance_id FROM course_instance ci JOIN course_layout cl ON ci.course_id = cl.course_id WHERE cl.course_code = 'ID1201'),
  (SELECT constants_id FROM constants LIMIT 1));
 
 
@@ -456,3 +497,37 @@ INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hour
   WHERE cl.course_code = 'DD1338' AND ta.activity_name = 'Course Admin'),
  (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Niharika'),
  45);
+
+-- Assign ID2214 activities to Paris (2nd course in P2)
+INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hours) VALUES
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE cl.course_code = 'ID2214' AND ta.activity_name = 'Lecture'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ 35),
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE cl.course_code = 'ID2214' AND ta.activity_name = 'Course Admin'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ 80);
+
+-- Assign ID1201 activities to Paris (2nd course in P1)
+INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hours) VALUES
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE cl.course_code = 'ID1201' AND ta.activity_name = 'Lecture'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ 40),
+((SELECT planned_activity_id FROM planned_activity pa 
+  JOIN teaching_activity ta ON pa.teaching_activity_id = ta.teaching_activity_id
+  JOIN course_instance ci ON pa.instance_id = ci.instance_id
+  JOIN course_layout cl ON ci.course_id = cl.course_id
+  WHERE cl.course_code = 'ID1201' AND ta.activity_name = 'Course Admin'),
+ (SELECT employment_id FROM employee e JOIN person p ON e.person_id = p.person_id WHERE p.first_name = 'Paris'),
+ 90);
