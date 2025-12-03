@@ -1,6 +1,9 @@
 -- speeds up the complex "Planned Hours" report by saving the calculation results into a saved snapshot (Materialized View) 
 --instead of recalculating them from scratch every time. This is used for heavy reports that are read often but updated rarely.
 
+-- materialize 1 cause it seems to be more periodic and less frequent than query 2 (query 2's "allocated hours" change more often
+-- so the materialized view would need updating more often)
+
 -- 1. Measure BEFORE (Original Query Performance)
 EXPLAIN ANALYZE
 WITH CurrentConstants AS (

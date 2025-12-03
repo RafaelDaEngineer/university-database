@@ -17,5 +17,5 @@ JOIN study_period sp ON cs.study_period_id = sp.study_period_id
 WHERE ci.study_year = '2025' AND cs.study_period_id = 2
 GROUP BY e.employment_id, p.first_name, p.last_name, sp.study_period_name -- collapse to one row per teacher
 
-HAVING COUNT(DISTINCT ec.instance_id) > 1
+HAVING COUNT(DISTINCT ec.instance_id) > 1 -- keeps only teachers with more than N course
 ORDER BY "No of courses" DESC;
