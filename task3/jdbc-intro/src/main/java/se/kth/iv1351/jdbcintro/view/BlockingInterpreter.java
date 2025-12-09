@@ -16,6 +16,7 @@ public class BlockingInterpreter {
         System.out.println("------------------------------------------------");
         System.out.println("UNIVERSITY DB INTERFACE");
         System.out.println("1. Check Course Cost (Task 1)");
+        System.out.println("2. Register 100 Students (Task 2)");
         System.out.println("q. Quit");
         System.out.println("------------------------------------------------");
 
@@ -25,31 +26,53 @@ public class BlockingInterpreter {
 
             switch (cmd) {
                 case "1":
-                    System.out.print("Enter Course Code (e.g. IV1351): ");
-                    String code = scanner.nextLine();
-                    try {
-                        CourseCostDTO result = controller.getCourseCost(code);
-                        if (result != null) {
-                            // View Logic: Formatting the output
-                            System.out.println("-----------------------------------------");
-                            System.out.println(" Course Code  : " + result.getCourseCode());
-                            System.out.println(" Study Period : " + result.getStudyPeriod());
-                            System.out.printf(" Planned Cost : %.2f SEK\n", result.getPlannedCost());
-                            System.out.printf(" Actual Cost  : %.2f SEK\n", result.getActualCost());
-                            System.out.println("-----------------------------------------");
-                        } else {
-                            System.out.println("Course not found or no data for year 2025.");
-                        }
-                    } catch (Exception e) {
-                        System.out.println("Operation failed: " + e.getMessage());
-                        // e.printStackTrace(); // debug only
-                    }
+                    checkCost();
+                    break;
+                case "2":
+                    registerStudents();
                     break;
                 case "q":
                     return;
                 default:
                     System.out.println("Unknown command.");
             }
+        }
+    }
+
+    private void checkCost() {
+        System.out.print("Enter Course Code (e.g. IV1351): ");
+        String code = scanner.nextLine();
+        try {
+            CourseCostDTO result = controller.getCourseCost(code);
+            printCost(result);
+        } catch (Exception e) {
+            System.out.println("Operation failed: " + e.getMessage());
+        }
+    }
+
+    private void registerStudents() {
+        System.out.print("Enter Course Code to add 100 students (e.g. IV1351): ");
+        String code = scanner.nextLine();
+        try {
+            System.out.println("Processing transaction...");
+            CourseCostDTO result = controller.registerStudents(code);
+            System.out.println("SUCCESS! Students added and costs recalculated.");
+            printCost(result);
+        } catch (Exception e) {
+            System.out.println("TRANSACTION FAILED: " + e.getMessage());
+        }
+    }
+
+    private void printCost(CourseCostDTO result) {
+        if (result != null) {
+            System.out.println("-----------------------------------------");
+            System.out.println(" Course Code  : " + result.getCourseCode());
+            System.out.println(" Study Period : " + result.getStudyPeriod());
+            System.out.printf(" Planned Cost : %.2f SEK\n", result.getPlannedCost());
+            System.out.printf(" Actual Cost  : %.2f SEK\n", result.getActualCost());
+            System.out.println("-----------------------------------------");
+        } else {
+            System.out.println("Course not found or no data for year 2025.");
         }
     }
 }
