@@ -1,24 +1,19 @@
 package se.kth.iv1351.jdbcintro.main;
 
-import se.kth.iv1351.jdbcintro.integration.DBHandler;
-import se.kth.iv1351.jdbcintro.integration.UniversityDAO;
-import java.sql.SQLException;
+import se.kth.iv1351.jdbcintro.controller.Controller;
+import se.kth.iv1351.jdbcintro.view.BlockingInterpreter;
 
 public class Main {
     public static void main(String[] args) {
         try {
-            // 1. Initialize Connection
-            DBHandler dbHandler = new DBHandler();
+            // 1. Initialize Controller (which initializes DB connection)
+            Controller contr = new Controller();
             
-            // 2. Create DAO
-            UniversityDAO dao = new UniversityDAO(dbHandler.getConnection());
-            
-            // 3. Test Connection
-            System.out.println("Attempting to connect to university_db...");
-            dao.testConnection();
+            // 2. Start the View
+            new BlockingInterpreter(contr).handleCmds();
 
-        } catch (ClassNotFoundException | SQLException e) {
-            System.out.println("Startup failed: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Application failed to start.");
             e.printStackTrace();
         }
     }
