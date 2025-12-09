@@ -1,3 +1,5 @@
+// SQL only allowed in here!! (but no logic?)
+
 package se.kth.iv1351.jdbcintro.integration;
 
 import java.sql.Connection;
