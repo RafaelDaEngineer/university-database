@@ -27,11 +27,22 @@ public class BlockingInterpreter {
                 case "1":
                     System.out.print("Enter Course Code (e.g. IV1351): ");
                     String code = scanner.nextLine();
-                    CourseCostDTO result = controller.getCourseCost(code);
-                    if (result != null) {
-                        System.out.println(result.toString());
-                    } else {
-                        System.out.println("Course not found or no data for year 2025.");
+                    try {
+                        CourseCostDTO result = controller.getCourseCost(code);
+                        if (result != null) {
+                            // View Logic: Formatting the output
+                            System.out.println("-----------------------------------------");
+                            System.out.println(" Course Code  : " + result.getCourseCode());
+                            System.out.println(" Study Period : " + result.getStudyPeriod());
+                            System.out.printf(" Planned Cost : %.2f SEK\n", result.getPlannedCost());
+                            System.out.printf(" Actual Cost  : %.2f SEK\n", result.getActualCost());
+                            System.out.println("-----------------------------------------");
+                        } else {
+                            System.out.println("Course not found or no data for year 2025.");
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Operation failed: " + e.getMessage());
+                        // e.printStackTrace(); // debug only
                     }
                     break;
                 case "q":
