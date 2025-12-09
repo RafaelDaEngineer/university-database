@@ -13,6 +13,8 @@ public class Controller {
     private final DBHandler dbHandler;
     private final UniversityDAO universityDAO;
     private final Connection connection;
+    
+    private static final int MAX_COURSES_PER_PERIOD = 4;
 
     public Controller() throws SQLException, ClassNotFoundException {
         this.dbHandler = new DBHandler();
@@ -78,15 +80,43 @@ public class Controller {
 
             // 6. return new costs
             return getCourseCost(courseCode);
+            
+        } catch (Exception e) {
+            try { connection.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            throw new Exception("Transaction failed: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Requirement 3: Allocate teacher to a course instance.
+     * Enforces Business Rule: Teacher cannot have > 4 courses in one period.
+     */
+    public void allocateTeacher(String teacherName, String courseCode) throws Exception {
+        try {
+            // 1. Resolve IDs (Read)
+            int teacherId = universityDAO.findTeacherId(teacherName);
+            int instanceId = universityDAO.findCourseInstanceId(courseCode);
+            String period = universityDAO.findStudyPeriod(instanceId);
+
+            // 2. Check Business Rule (Logic in Controller)
+            int currentLoad = universityDAO.countTeacherCourses(teacherId, period);
+            
+            if (currentLoad >= MAX_COURSES_PER_PERIOD) {
+                throw new Exception("Allocation Rejected: " + teacherName + 
+                                    " already has " + currentLoad + " courses in " + period + 
+                                    " (Max allowed: " + MAX_COURSES_PER_PERIOD + ")");
+            }
+
+            // 3. Create Allocation (Write)
+            universityDAO.createAllocation(teacherId, instanceId);
+
+            // 4. Commit
+            connection.commit();
 
         } catch (Exception e) {
-            // ROLLBACK on any failure to ensure consistent state
-            try {
-                connection.rollback();
-            } catch (SQLException rollbackEx) {
-                System.err.println("Rollback failed: " + rollbackEx.getMessage());
-            }
-            throw new Exception("Transaction failed, changes rolled back. Reason: " + e.getMessage());
+            try { connection.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            // Re-throw the clean error message to the View
+            throw e; 
         }
     }
 }

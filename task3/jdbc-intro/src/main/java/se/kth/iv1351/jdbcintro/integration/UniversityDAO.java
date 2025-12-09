@@ -11,12 +11,22 @@ import se.kth.iv1351.jdbcintro.model.CourseConfigDTO;
 
 public class UniversityDAO {
     private final Connection connection;
+    
+    // Statements (Task 1 & 2)
     private PreparedStatement avgSalaryStmt;
     private PreparedStatement plannedStmt;
     private PreparedStatement allocatedStmt;
     private PreparedStatement updateStudentsStmt;
     private PreparedStatement getConfigStmt;
     private PreparedStatement updateActivityStmt;
+
+    // Statements (Task 3: Allocations)
+    private PreparedStatement findPersonStmt;
+    private PreparedStatement findInstanceStmt;
+    private PreparedStatement findPeriodStmt;
+    private PreparedStatement countCoursesStmt;
+    private PreparedStatement createAllocationStmt;
+    private PreparedStatement deleteAllocationStmt; // Added for completeness
 
     public UniversityDAO(Connection connection) throws SQLException {
         this.connection = connection;
@@ -71,6 +81,42 @@ public class UniversityDAO {
                 ") " +
                 "AND teaching_activity_id = (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = ?)";
         updateActivityStmt = connection.prepareStatement(updateActivitySql);
+
+        // --- NEW STATEMENTS (Task 3) ---
+        
+        // 1. Find Teacher ID by First Name (Simplification for CLI)
+        findPersonStmt = connection.prepareStatement(
+            "SELECT e.employment_id FROM employee e " +
+            "JOIN person p ON e.person_id = p.person_id " +
+            "WHERE p.first_name = ?");
+
+        // 2. Find Instance ID by Course Code
+        findInstanceStmt = connection.prepareStatement(
+            "SELECT ci.instance_id FROM course_instance ci " +
+            "JOIN course_layout cl ON ci.course_id = cl.course_id " +
+            "WHERE cl.course_code = ? AND ci.study_year = '2025'");
+
+        // 3. Find Study Period for an Instance
+        findPeriodStmt = connection.prepareStatement(
+            "SELECT sp.study_period_name FROM course_study cs " +
+            "JOIN study_period sp ON cs.study_period_id = sp.study_period_id " +
+            "WHERE cs.instance_id = ?");
+
+        // 4. Count courses for a teacher in a specific period
+        // '::study_period_enum' to cast the string parameter
+        countCoursesStmt = connection.prepareStatement(
+            "SELECT COUNT(*) as course_count FROM employee_course ec " +
+            "JOIN course_study cs ON ec.instance_id = cs.instance_id " +
+            "JOIN study_period sp ON cs.study_period_id = sp.study_period_id " +
+            "WHERE ec.employment_id = ? AND sp.study_period_name = ?::study_period_enum");
+
+        // 5. Create Allocation
+        createAllocationStmt = connection.prepareStatement(
+            "INSERT INTO employee_course (employment_id, instance_id) VALUES (?, ?)");
+            
+        // 6. Delete Allocation
+        deleteAllocationStmt = connection.prepareStatement(
+            "DELETE FROM employee_course WHERE employment_id = ? AND instance_id = ?");
     }
 
     // --- READ METHODS ---
@@ -113,8 +159,43 @@ public class UniversityDAO {
         }
         return list;
     }
+    
+    // --- TASK 3 HELPERS ---
+    
+    public int findTeacherId(String firstName) throws SQLException {
+        findPersonStmt.setString(1, firstName);
+        try (ResultSet rs = findPersonStmt.executeQuery()) {
+            if (rs.next()) return rs.getInt("employment_id");
+            throw new SQLException("Teacher not found: " + firstName);
+        }
+    }
+    
+    public int findCourseInstanceId(String courseCode) throws SQLException {
+        findInstanceStmt.setString(1, courseCode);
+        try (ResultSet rs = findInstanceStmt.executeQuery()) {
+            if (rs.next()) return rs.getInt("instance_id");
+            throw new SQLException("Course instance not found: " + courseCode);
+        }
+    }
+    
+    public String findStudyPeriod(int instanceId) throws SQLException {
+        findPeriodStmt.setInt(1, instanceId);
+        try (ResultSet rs = findPeriodStmt.executeQuery()) {
+            if (rs.next()) return rs.getString("study_period_name");
+            throw new SQLException("Study period not found for instance: " + instanceId);
+        }
+    }
+    
+    public int countTeacherCourses(int employmentId, String period) throws SQLException {
+        countCoursesStmt.setInt(1, employmentId);
+        countCoursesStmt.setString(2, period);
+        try (ResultSet rs = countCoursesStmt.executeQuery()) {
+            if (rs.next()) return rs.getInt("course_count");
+            return 0;
+        }
+    }
 
-    // --- WRITE METHODS (For Task 2) ---
+    // --- WRITE METHODS (task 2) ---
 
     public void addStudents(String courseCode) throws SQLException {
         updateStudentsStmt.setString(1, courseCode);
@@ -139,5 +220,17 @@ public class UniversityDAO {
         updateActivityStmt.setString(2, courseCode);
         updateActivityStmt.setString(3, activityName);
         updateActivityStmt.executeUpdate();
+    }
+    
+    public void createAllocation(int employmentId, int instanceId) throws SQLException {
+        createAllocationStmt.setInt(1, employmentId);
+        createAllocationStmt.setInt(2, instanceId);
+        createAllocationStmt.executeUpdate();
+    }
+
+    public void deleteAllocation(int employmentId, int instanceId) throws SQLException {
+        deleteAllocationStmt.setInt(1, employmentId);
+        deleteAllocationStmt.setInt(2, instanceId);
+        deleteAllocationStmt.executeUpdate();
     }
 }
