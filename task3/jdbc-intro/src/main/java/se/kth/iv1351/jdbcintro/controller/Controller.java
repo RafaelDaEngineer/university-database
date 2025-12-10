@@ -48,6 +48,9 @@ public class Controller {
             actualTotal += (act.getAllocatedHours() * act.getFactor() * act.getMonthlySalary()) / 160.0;
         }
 
+        // explicitly commit the read-only transaction (release locks)
+        connection.commit();
+
         return new CourseCostDTO(courseCode, studyPeriodName, plannedTotal, actualTotal);
     }
 
@@ -75,10 +78,10 @@ public class Controller {
             universityDAO.updateActivityHours(courseCode, "Grading", newExamHours);
             universityDAO.updateActivityHours(courseCode, "Course Admin", newAdminHours);
 
-            // 5. commit transaction
+            // 5. commit transaction (save changes to db and release locks)
             connection.commit();
 
-            // 6. return new costs
+            // 6. return new costs (available in db after the transaction are committed)
             return getCourseCost(courseCode);
             
         } catch (Exception e) {

@@ -28,7 +28,7 @@ public class UniversityDAO {
     private PreparedStatement findPeriodStmt;
     private PreparedStatement countCoursesStmt;
     private PreparedStatement createAllocationStmt;
-    private PreparedStatement deleteAllocationStmt; // Added for completeness
+    private PreparedStatement deleteAllocationStmt;
 
     public UniversityDAO(Connection connection) throws SQLException {
         this.connection = connection;
@@ -69,9 +69,10 @@ public class UniversityDAO {
         updateStudentsStmt = connection.prepareStatement(updateStudentsSql);
 
         // 2. Read HP and Students (for formula calculation)
+        // FIX: added FOR UPDATE to lock the read rows (so that concurrent transactions don't read the same value which might lead to race conditions)
         String getConfigSql = "SELECT ci.num_students, cl.hp FROM course_instance ci " +
                 "JOIN course_layout cl ON ci.course_id = cl.course_id " +
-                "WHERE cl.course_code = ? AND ci.study_year = '2025'"; // locking handled by previous UPDATE or explicit if needed
+                "WHERE cl.course_code = ? AND ci.study_year = '2025' FOR UPDATE"; 
         getConfigStmt = connection.prepareStatement(getConfigSql);
 
         // 3. update activity hours (grading/admin)
@@ -86,7 +87,7 @@ public class UniversityDAO {
 
         // --- NEW STATEMENTS (Task 3) ---
         
-        // 1. Find Teacher ID by First Name (Simplification for CLI)
+        // 1. Find Teacher ID by First Name
         findPersonStmt = connection.prepareStatement(
             "SELECT e.employment_id FROM employee e " +
             "JOIN person p ON e.person_id = p.person_id " +
@@ -105,12 +106,13 @@ public class UniversityDAO {
             "WHERE cs.instance_id = ?");
 
         // 4. Count courses for a teacher in a specific period
-        // '::study_period_enum' to cast the string parameter
+        // FIX: Changed COUNT(*) to SELECT 1 and added FOR UPDATE. 
+        // postgres doesn't allow COUNT with FOR UPDATE cause COUNT doesn't return actual rows (so there's nothing to lock)
         countCoursesStmt = connection.prepareStatement(
-            "SELECT COUNT(*) as course_count FROM employee_course ec " +
+            "SELECT 1 FROM employee_course ec " +
             "JOIN course_study cs ON ec.instance_id = cs.instance_id " +
             "JOIN study_period sp ON cs.study_period_id = sp.study_period_id " +
-            "WHERE ec.employment_id = ? AND sp.study_period_name = ?::study_period_enum");
+            "WHERE ec.employment_id = ? AND sp.study_period_name = ?::study_period_enum FOR UPDATE");
 
         // 5. Create Allocation
         createAllocationStmt = connection.prepareStatement(
@@ -192,8 +194,12 @@ public class UniversityDAO {
         countCoursesStmt.setInt(1, employmentId);
         countCoursesStmt.setString(2, period);
         try (ResultSet rs = countCoursesStmt.executeQuery()) {
-            if (rs.next()) return rs.getInt("course_count");
-            return 0;
+            // count rows manually because SELECT 1 FOR UPDATE returns one row per matching record
+            int count = 0;
+            while (rs.next()) { // rs.next() returns true if there is a next row (loops through all rows)
+                count++;
+            }
+            return count;
         }
     }
 
