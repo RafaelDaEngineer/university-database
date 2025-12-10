@@ -122,4 +122,40 @@ public class Controller {
             throw e; 
         }
     }
+
+    /**
+     * 'Exercise' activity and allocate a teacher to it.
+     */
+    public CourseCostDTO addExerciseActivity(String courseCode, String teacherName) throws Exception {
+        try {
+            // 1. Check if 'Exercise' exists. If not, create it.
+            int activityId = universityDAO.readActivityId("Exercise");
+            if (activityId == -1) {
+                // Factor 1.5 for Exercise
+                activityId = universityDAO.createActivity("Exercise", 1.5);
+            }
+
+            // 2. Resolve Course Instance & Teacher IDs
+            int instanceId = universityDAO.readCourseInstanceId(courseCode);
+            int teacherId = universityDAO.readTeacherId(teacherName);
+            int constantsId = universityDAO.readConstantsId();
+
+            // 3. Add 'Exercise' to the Course (Planned Activity)
+            // (default 20 hours for Exercise)
+            int plannedActivityId = universityDAO.createPlannedActivity(20, activityId, instanceId, constantsId);
+
+            // 4. Allocate the Teacher to this specific activity (Employee Planned)
+            universityDAO.createEmployeePlannedAllocation(plannedActivityId, teacherId, 20);
+
+            // 5. Commit Transaction
+            connection.commit();
+
+            // 6. Return updated stats
+            return getCourseCost(courseCode);
+
+        } catch (Exception e) {
+            try { connection.rollback(); } catch (SQLException ex) { ex.printStackTrace(); }
+            throw new Exception("Failed to add Exercise activity: " + e.getMessage());
+        }
+    }
 }

@@ -6,6 +6,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
 import java.util.ArrayList;
 import se.kth.iv1351.jdbcintro.model.ActivityDTO;
@@ -30,13 +31,20 @@ public class UniversityDAO {
     private PreparedStatement createAllocationStmt;
     private PreparedStatement deleteAllocationStmt;
 
+    // Statements (Task 4: New Activity)
+    private PreparedStatement findActivityStmt;
+    private PreparedStatement createActivityStmt;
+    private PreparedStatement createPlannedActivityStmt;
+    private PreparedStatement createEmployeePlannedStmt;
+    private PreparedStatement findConstantStmt;
+
     public UniversityDAO(Connection connection) throws SQLException {
         this.connection = connection;
         prepareStatements();
     }
 
     private void prepareStatements() throws SQLException {
-        // READ STATEMENTS (Task 1)
+        // READ STATEMENTS (Task 1 & 2)
         avgSalaryStmt = connection.prepareStatement("SELECT AVG(salary) as val FROM salary_info");
 
         String plannedSql = "SELECT pa.planned_hours, ta.factor, cl.course_code, sp.study_period_name " +
@@ -85,7 +93,7 @@ public class UniversityDAO {
                 "AND teaching_activity_id = (SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = ?)";
         updateActivityStmt = connection.prepareStatement(updateActivitySql);
 
-        // --- NEW STATEMENTS (Task 3) ---
+        // --- STATEMENTS (Task 3) ---
         
         // 1. Find Teacher ID by First Name
         findPersonStmt = connection.prepareStatement(
@@ -121,6 +129,29 @@ public class UniversityDAO {
         // 6. Delete Allocation
         deleteAllocationStmt = connection.prepareStatement(
             "DELETE FROM employee_course WHERE employment_id = ? AND instance_id = ?");
+
+        // --- STATEMENTS (Task 4) ---
+        
+        // 1. Check if 'Exercise' exists
+        findActivityStmt = connection.prepareStatement(
+            "SELECT teaching_activity_id FROM teaching_activity WHERE activity_name = ?");
+            
+        // 2. Create 'Exercise' activity (if missing)
+        createActivityStmt = connection.prepareStatement(
+            "INSERT INTO teaching_activity (activity_name, factor) VALUES (?, ?)", 
+            Statement.RETURN_GENERATED_KEYS);
+
+        // 3. Get constant ID (needed for planned_activity insert)
+        findConstantStmt = connection.prepareStatement("SELECT constants_id FROM constants LIMIT 1");
+
+        // 4. Create Planned Activity (Link Exercise to Course)
+        createPlannedActivityStmt = connection.prepareStatement(
+            "INSERT INTO planned_activity (planned_hours, teaching_activity_id, instance_id, constants_id) VALUES (?, ?, ?, ?)",
+            Statement.RETURN_GENERATED_KEYS);
+
+        // 5. Create Employee Planned Allocation (Link Teacher to Activity)
+        createEmployeePlannedStmt = connection.prepareStatement(
+            "INSERT INTO employee_planned (planned_activity_id, employment_id, allocated_hours) VALUES (?, ?, ?)");
     }
 
     // --- READ METHODS ---
@@ -203,7 +234,7 @@ public class UniversityDAO {
         }
     }
 
-    // --- WRITE METHODS (task 2) ---
+    // --- WRITE METHODS (task 2 & 3) ---
 
     public void updateStudentCount(String courseCode) throws SQLException {
         updateStudentsStmt.setString(1, courseCode);
@@ -240,5 +271,59 @@ public class UniversityDAO {
         deleteAllocationStmt.setInt(1, employmentId);
         deleteAllocationStmt.setInt(2, instanceId);
         deleteAllocationStmt.executeUpdate();
+    }
+
+    // --- TASK 4 METHODS ---
+
+    public int readActivityId(String activityName) throws SQLException {
+        findActivityStmt.setString(1, activityName);
+        try (ResultSet rs = findActivityStmt.executeQuery()) {
+            if (rs.next()) return rs.getInt("teaching_activity_id");
+            return -1; // Not found
+        }
+    }
+
+    public int createActivity(String activityName, double factor) throws SQLException {
+        createActivityStmt.setString(1, activityName);
+        createActivityStmt.setDouble(2, factor);
+        createActivityStmt.executeUpdate();
+        
+        try (ResultSet generatedKeys = createActivityStmt.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                return generatedKeys.getInt(1);
+            } else {
+                throw new SQLException("Creating activity failed, no ID obtained.");
+            }
+        }
+    }
+
+    public int readConstantsId() throws SQLException {
+        try (ResultSet rs = findConstantStmt.executeQuery()) {
+            if (rs.next()) return rs.getInt("constants_id");
+            throw new SQLException("No constants found in DB");
+        }
+    }
+
+    public int createPlannedActivity(int plannedHours, int activityId, int instanceId, int constantsId) throws SQLException {
+        createPlannedActivityStmt.setInt(1, plannedHours);
+        createPlannedActivityStmt.setInt(2, activityId);
+        createPlannedActivityStmt.setInt(3, instanceId);
+        createPlannedActivityStmt.setInt(4, constantsId);
+        createPlannedActivityStmt.executeUpdate();
+
+        try (ResultSet generatedKeys = createPlannedActivityStmt.getGeneratedKeys()) {
+            if (generatedKeys.next()) {
+                return generatedKeys.getInt(1);
+            } else {
+                throw new SQLException("Creating planned activity failed, no ID obtained.");
+            }
+        }
+    }
+
+    public void createEmployeePlannedAllocation(int plannedActivityId, int employmentId, int allocatedHours) throws SQLException {
+        createEmployeePlannedStmt.setInt(1, plannedActivityId);
+        createEmployeePlannedStmt.setInt(2, employmentId);
+        createEmployeePlannedStmt.setInt(3, allocatedHours);
+        createEmployeePlannedStmt.executeUpdate();
     }
 }

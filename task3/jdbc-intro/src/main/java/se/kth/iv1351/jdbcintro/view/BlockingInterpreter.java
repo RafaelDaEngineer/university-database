@@ -18,6 +18,7 @@ public class BlockingInterpreter {
         System.out.println("1. Check Course Cost (Task 1)");
         System.out.println("2. Register 100 Students (Task 2)");
         System.out.println("3. Allocate Teacher (Task 3)");
+        System.out.println("4. Add 'Exercise' Activity (Task 4)");
         System.out.println("q. Quit");
         System.out.println("------------------------------------------------");
 
@@ -34,6 +35,9 @@ public class BlockingInterpreter {
                     break;
                 case "3":
                     allocateTeacher();
+                    break;
+                case "4":
+                    addExercise();
                     break;
                 case "q":
                     return;
@@ -78,6 +82,22 @@ public class BlockingInterpreter {
             System.out.println("SUCCESS! " + name + " assigned to " + code + ".");
         } catch (Exception e) {
             System.out.println("ALLOCATION FAILED: " + e.getMessage());
+        }
+    }
+
+    private void addExercise() {
+        System.out.print("Enter Teacher First Name (e.g. Paris): ");
+        String name = scanner.nextLine();
+        System.out.print("Enter Course Code (e.g. IV1351): ");
+        String code = scanner.nextLine();
+
+        try {
+            System.out.println("Processing transaction...");
+            CourseCostDTO result = controller.addExerciseActivity(code, name);
+            System.out.println("SUCCESS! 'Exercise' added to " + code + " and assigned to " + name + ".");
+            printCost(result);
+        } catch (Exception e) {
+            System.out.println("OPERATION FAILED: " + e.getMessage());
         }
     }
 
