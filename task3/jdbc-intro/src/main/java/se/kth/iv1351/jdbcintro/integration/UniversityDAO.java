@@ -1,3 +1,5 @@
+// only file that's allowed to touch the db. statements (java.sql.PreparedStatement) are prepared here
+
 package se.kth.iv1351.jdbcintro.integration;
 
 import java.sql.Connection;

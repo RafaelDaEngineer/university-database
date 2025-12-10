@@ -1,3 +1,4 @@
+-- for debugging functionality 2
 SELECT 
     ta.activity_name, 
     pa.planned_hours AS "Hours Needed (Budget)",
