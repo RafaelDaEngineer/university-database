@@ -123,14 +123,14 @@ public class UniversityDAO {
 
     // --- READ METHODS ---
 
-    public double getAverageSalary() throws SQLException {
+    public double readAverageSalary() throws SQLException {
         try (ResultSet rs = avgSalaryStmt.executeQuery()) {
             if (rs.next()) return rs.getDouble("val");
             return 0;
         }
     }
 
-    public List<ActivityDTO> findPlannedActivities(String courseCode) throws SQLException {
+    public List<ActivityDTO> readPlannedActivities(String courseCode) throws SQLException {
         plannedStmt.setString(1, courseCode);
         List<ActivityDTO> list = new ArrayList<>();
         try (ResultSet rs = plannedStmt.executeQuery()) {
@@ -147,7 +147,7 @@ public class UniversityDAO {
         return list;
     }
 
-    public List<ActivityDTO> findAllocatedActivities(String courseCode) throws SQLException {
+    public List<ActivityDTO> readAllocatedActivities(String courseCode) throws SQLException {
         allocatedStmt.setString(1, courseCode);
         List<ActivityDTO> list = new ArrayList<>();
         try (ResultSet rs = allocatedStmt.executeQuery()) {
@@ -163,32 +163,32 @@ public class UniversityDAO {
     }
     
     // --- TASK 3 HELPERS ---
-    
-    public int findTeacherId(String firstName) throws SQLException {
+
+    public int readTeacherId(String firstName) throws SQLException {
         findPersonStmt.setString(1, firstName);
         try (ResultSet rs = findPersonStmt.executeQuery()) {
             if (rs.next()) return rs.getInt("employment_id");
             throw new SQLException("Teacher not found: " + firstName);
         }
     }
-    
-    public int findCourseInstanceId(String courseCode) throws SQLException {
+
+    public int readCourseInstanceId(String courseCode) throws SQLException {
         findInstanceStmt.setString(1, courseCode);
         try (ResultSet rs = findInstanceStmt.executeQuery()) {
             if (rs.next()) return rs.getInt("instance_id");
             throw new SQLException("Course instance not found: " + courseCode);
         }
     }
-    
-    public String findStudyPeriod(int instanceId) throws SQLException {
+
+    public String readStudyPeriod(int instanceId) throws SQLException {
         findPeriodStmt.setInt(1, instanceId);
         try (ResultSet rs = findPeriodStmt.executeQuery()) {
             if (rs.next()) return rs.getString("study_period_name");
             throw new SQLException("Study period not found for instance: " + instanceId);
         }
     }
-    
-    public int countTeacherCourses(int employmentId, String period) throws SQLException {
+
+    public int readTeacherCourseCount(int employmentId, String period) throws SQLException {
         countCoursesStmt.setInt(1, employmentId);
         countCoursesStmt.setString(2, period);
         try (ResultSet rs = countCoursesStmt.executeQuery()) {
@@ -199,7 +199,7 @@ public class UniversityDAO {
 
     // --- WRITE METHODS (task 2) ---
 
-    public void addStudents(String courseCode) throws SQLException {
+    public void updateStudentCount(String courseCode) throws SQLException {
         updateStudentsStmt.setString(1, courseCode);
         int rows = updateStudentsStmt.executeUpdate();
         if (rows == 0) {
@@ -207,7 +207,7 @@ public class UniversityDAO {
         }
     }
 
-    public CourseConfigDTO getCourseConfig(String courseCode) throws SQLException {
+    public CourseConfigDTO readCourseConfig(String courseCode) throws SQLException {
         getConfigStmt.setString(1, courseCode);
         try (ResultSet rs = getConfigStmt.executeQuery()) {
             if (rs.next()) {

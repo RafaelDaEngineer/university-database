@@ -20,7 +20,6 @@ public class DBHandler {
 
     private void connect() throws SQLException {
         connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-        // TODO: TASK 3 turn off autocommit to handle transactions manually
         connection.setAutoCommit(false); 
     }
 

@@ -3,7 +3,7 @@ package se.kth.iv1351.jdbcintro.model;
 /**
  * DTO to transfer configuration data (#students and HP)
  * required for calculating dependent activity hours.
- * (like a snapshop of the course instance)
+ * (like a snapshot of the course instance)
  */
 public class CourseConfigDTO {
     private final int numStudents;

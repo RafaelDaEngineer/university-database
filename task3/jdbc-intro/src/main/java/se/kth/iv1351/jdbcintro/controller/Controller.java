@@ -28,9 +28,9 @@ public class Controller {
      */
     public CourseCostDTO getCourseCost(String courseCode) throws SQLException {
         // Logic for 1: (Hours * Factor * Salary) / 160
-        
-        double avgSalary = universityDAO.getAverageSalary();
-        List<ActivityDTO> plannedActs = universityDAO.findPlannedActivities(courseCode);
+
+        double avgSalary = universityDAO.readAverageSalary();
+        List<ActivityDTO> plannedActs = universityDAO.readPlannedActivities(courseCode);
 
         if (plannedActs.isEmpty()) return null;
 
@@ -42,7 +42,7 @@ public class Controller {
             if (act.getStudyPeriod() != null) studyPeriodName = act.getStudyPeriod();
         }
 
-        List<ActivityDTO> allocatedActs = universityDAO.findAllocatedActivities(courseCode);
+        List<ActivityDTO> allocatedActs = universityDAO.readAllocatedActivities(courseCode);
         double actualTotal = 0;
         for (ActivityDTO act : allocatedActs) {
             actualTotal += (act.getAllocatedHours() * act.getFactor() * act.getMonthlySalary()) / 160.0;
@@ -60,10 +60,10 @@ public class Controller {
     public CourseCostDTO registerStudents(String courseCode) throws Exception {
         try {
             // 1. Modify: Add 100 students
-            universityDAO.addStudents(courseCode);
+            universityDAO.updateStudentCount(courseCode);
 
             // 2. get new config to apply formulas
-            CourseConfigDTO config = universityDAO.getCourseConfig(courseCode);
+            CourseConfigDTO config = universityDAO.readCourseConfig(courseCode);
 
             // 3. Business Logic Formulas
             // Exam = 32 + 0.725 * Students
@@ -94,13 +94,13 @@ public class Controller {
     public void allocateTeacher(String teacherName, String courseCode) throws Exception {
         try {
             // 1. Resolve IDs (Read)
-            int teacherId = universityDAO.findTeacherId(teacherName);
-            int instanceId = universityDAO.findCourseInstanceId(courseCode);
-            String period = universityDAO.findStudyPeriod(instanceId);
+            int teacherId = universityDAO.readTeacherId(teacherName);
+            int instanceId = universityDAO.readCourseInstanceId(courseCode);
+            String period = universityDAO.readStudyPeriod(instanceId);
 
             // 2. Check Business Rule (Logic in Controller)
-            int currentLoad = universityDAO.countTeacherCourses(teacherId, period);
-            
+            int currentLoad = universityDAO.readTeacherCourseCount(teacherId, period);
+
             if (currentLoad >= MAX_COURSES_PER_PERIOD) {
                 throw new Exception("Allocation Rejected: " + teacherName + 
                                     " already has " + currentLoad + " courses in " + period + 
