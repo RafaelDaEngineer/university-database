@@ -4,7 +4,7 @@ import se.kth.iv1351.jdbcintro.integration.UniversityDAO;
 import se.kth.iv1351.jdbcintro.model.DTO.CourseCostDTO;
 import se.kth.iv1351.jdbcintro.model.DTO.ActivityDTO;
 import se.kth.iv1351.jdbcintro.model.DTO.CourseConfigDTO;
-import java.sql.SQLException;
+
 import java.util.List;
 
 /**
@@ -24,7 +24,7 @@ public class Course {
     /**
      * Requirement 1: Compute teaching cost.
      */
-    public CourseCostDTO getCourseCost(String courseCode) throws Exception {
+    public CourseCostDTO getCourseCost() throws Exception {
         try {
             double avgSalary = universityDAO.readAverageSalary();
             List<ActivityDTO> plannedActs = universityDAO.readPlannedActivities(courseCode);
@@ -57,7 +57,7 @@ public class Course {
     /**
      * Requirement 2: Register students and recalculate costs.
      */
-    public CourseCostDTO registerStudents(String courseCode) throws Exception {
+    public CourseCostDTO registerStudents() throws Exception {
         try {
             universityDAO.updateStudentCount(courseCode);
             CourseConfigDTO config = universityDAO.readCourseConfig(courseCode);
@@ -70,7 +70,7 @@ public class Course {
             universityDAO.updateActivityHours(courseCode, "Course Admin", newAdminHours);
 
             universityDAO.commit();
-            return getCourseCost(courseCode);
+            return getCourseCost();
 
         } catch (Exception e) {
             rollbackSafely();
@@ -82,7 +82,7 @@ public class Course {
      * Requirement 3: Allocate teacher to a course instance.
      * Enforces Business Rule: Teacher cannot have > 4 courses in one period.
      */
-    public void allocateTeacher(String teacherName, String courseCode) throws Exception {
+    public void allocateTeacher(String teacherName) throws Exception {
         try {
             int teacherId = universityDAO.readTeacherId(teacherName);
             int instanceId = universityDAO.readCourseInstanceId(courseCode);
@@ -115,7 +115,7 @@ public class Course {
     /**
      * Deallocate teacher from this course.
      */
-    public void deallocateTeacher(String teacherName, String courseCode) throws Exception {
+    public void deallocateTeacher(String teacherName) throws Exception {
         try {
             int teacherId = universityDAO.readTeacherId(teacherName);
             int instanceId = universityDAO.readCourseInstanceId(courseCode);
@@ -130,7 +130,7 @@ public class Course {
     /**
      * Add 'Exercise' activity and allocate a teacher to it.
      */
-    public CourseCostDTO addExerciseActivity(String courseCode, String teacherName) throws Exception {
+    public CourseCostDTO addExerciseActivity(String teacherName) throws Exception {
         try {
             int activityId = universityDAO.readActivityId("Exercise");
             if (activityId == -1) {
@@ -145,7 +145,7 @@ public class Course {
             universityDAO.createEmployeePlannedAllocation(plannedActivityId, teacherId, 20);
 
             universityDAO.commit();
-            return this.getCourseCost(courseCode);
+            return this.getCourseCost();
 
         } catch (Exception e) {
             rollbackSafely();

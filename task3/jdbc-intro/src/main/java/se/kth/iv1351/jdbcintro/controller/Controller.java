@@ -16,7 +16,7 @@ public class Controller {
      */
     public CourseCostDTO getCourseCost(String courseCode) throws Exception {
         Course course = new Course(courseCode, universityDAO);
-        return course.getCourseCost(courseCode);
+        return course.getCourseCost();
     }
 
     /**
@@ -24,7 +24,7 @@ public class Controller {
      */
     public CourseCostDTO registerStudents(String courseCode) throws Exception {
         Course course = new Course(courseCode, universityDAO);
-        return course.registerStudents(courseCode);
+        return course.registerStudents();
     }
 
     /**
@@ -32,7 +32,7 @@ public class Controller {
      */
     public void allocateTeacher(String teacherName, String courseCode) throws Exception {
         Course course = new Course(courseCode, universityDAO);
-        course.allocateTeacher(teacherName, courseCode);
+        course.allocateTeacher(teacherName);
     }
 
     /**
@@ -40,7 +40,7 @@ public class Controller {
      */
     public void deallocateTeacher(String teacherName, String courseCode) throws Exception {
         Course course = new Course(courseCode, universityDAO);
-        course.deallocateTeacher(teacherName, courseCode);
+        course.deallocateTeacher(teacherName);
     }
 
     /**
@@ -48,6 +48,6 @@ public class Controller {
      */
     public CourseCostDTO addExerciseActivity(String courseCode, String teacherName) throws Exception {
         Course course = new Course(courseCode, universityDAO);
-        return course.addExerciseActivity(courseCode, teacherName);
+        return course.addExerciseActivity(teacherName);
     }
 }
