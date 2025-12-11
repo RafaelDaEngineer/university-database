@@ -24,29 +24,34 @@ public class Course {
     /**
      * Requirement 1: Compute teaching cost.
      */
-    public CourseCostDTO getCourseCost(String courseCode) throws SQLException {
-        double avgSalary = universityDAO.readAverageSalary();
-        List<ActivityDTO> plannedActs = universityDAO.readPlannedActivities(courseCode);
+    public CourseCostDTO getCourseCost(String courseCode) throws Exception {
+        try {
+            double avgSalary = universityDAO.readAverageSalary();
+            List<ActivityDTO> plannedActs = universityDAO.readPlannedActivities(courseCode);
 
-        if (plannedActs.isEmpty()) return null;
+            if (plannedActs.isEmpty()) return null;
 
-        double plannedTotal = 0;
-        String studyPeriodName = "";
+            double plannedTotal = 0;
+            String studyPeriodName = "";
 
-        for (ActivityDTO act : plannedActs) {
-            plannedTotal += (act.getPlannedHours() * act.getFactor() * avgSalary) / 160.0;
-            if (act.getStudyPeriod() != null) studyPeriodName = act.getStudyPeriod();
+            for (ActivityDTO act : plannedActs) {
+                plannedTotal += (act.getPlannedHours() * act.getFactor() * avgSalary) / 160.0;
+                if (act.getStudyPeriod() != null) studyPeriodName = act.getStudyPeriod();
+            }
+
+            List<ActivityDTO> allocatedActs = universityDAO.readAllocatedActivities(courseCode);
+            double actualTotal = 0;
+            for (ActivityDTO act : allocatedActs) {
+                actualTotal += (act.getAllocatedHours() * act.getFactor() * act.getMonthlySalary()) / 160.0;
+            }
+
+            universityDAO.commit();
+
+            return new CourseCostDTO(courseCode, studyPeriodName, plannedTotal, actualTotal);
+        } catch (Exception e) {
+            rollbackSafely();
+            throw new Exception("Failed to compute course cost: " + e.getMessage());
         }
-
-        List<ActivityDTO> allocatedActs = universityDAO.readAllocatedActivities(courseCode);
-        double actualTotal = 0;
-        for (ActivityDTO act : allocatedActs) {
-            actualTotal += (act.getAllocatedHours() * act.getFactor() * act.getMonthlySalary()) / 160.0;
-        }
-
-        universityDAO.commit();
-
-        return new CourseCostDTO(courseCode, studyPeriodName, plannedTotal, actualTotal);
     }
 
     /**
