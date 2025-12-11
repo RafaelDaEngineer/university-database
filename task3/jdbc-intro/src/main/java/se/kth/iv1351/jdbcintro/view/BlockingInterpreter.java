@@ -1,7 +1,7 @@
 package se.kth.iv1351.jdbcintro.view;
 
 import se.kth.iv1351.jdbcintro.controller.Controller;
-import se.kth.iv1351.jdbcintro.model.CourseCostDTO;
+import se.kth.iv1351.jdbcintro.model.DTO.CourseCostDTO;
 import java.util.Scanner;
 
 public class BlockingInterpreter {
@@ -19,6 +19,7 @@ public class BlockingInterpreter {
         System.out.println("2. Register 100 Students (Task 2)");
         System.out.println("3. Allocate Teacher (Task 3)");
         System.out.println("4. Add 'Exercise' Activity (Task 4)");
+        System.out.println("5. Deallocate Teacher (Task 3)");
         System.out.println("q. Quit");
         System.out.println("------------------------------------------------");
 
@@ -38,6 +39,9 @@ public class BlockingInterpreter {
                     break;
                 case "4":
                     addExercise();
+                    break;
+                case "5":
+                    deallocateTeacher();
                     break;
                 case "q":
                     return;
@@ -76,12 +80,26 @@ public class BlockingInterpreter {
         String name = scanner.nextLine();
         System.out.print("Enter Course Code (e.g. DD1337): ");
         String code = scanner.nextLine();
-        
+
         try {
             controller.allocateTeacher(name, code);
             System.out.println("SUCCESS! " + name + " assigned to " + code + ".");
         } catch (Exception e) {
             System.out.println("ALLOCATION FAILED: " + e.getMessage());
+        }
+    }
+
+    private void deallocateTeacher() {
+        System.out.print("Enter Teacher First Name (e.g. Paris): ");
+        String name = scanner.nextLine();
+        System.out.print("Enter Course Code (e.g. DD1337): ");
+        String code = scanner.nextLine();
+
+        try {
+            controller.deallocateTeacher(name, code);
+            System.out.println("SUCCESS! " + name + " removed from " + code + ".");
+        } catch (Exception e) {
+            System.out.println("DEALLOCATION FAILED: " + e.getMessage());
         }
     }
 

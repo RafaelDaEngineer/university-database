@@ -1,4 +1,4 @@
-package se.kth.iv1351.jdbcintro.model;
+package se.kth.iv1351.jdbcintro.model.DTO;
 
 /**
  * Represents raw activity data fetched from the database.

@@ -9,8 +9,8 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.ArrayList;
-import se.kth.iv1351.jdbcintro.model.ActivityDTO;
-import se.kth.iv1351.jdbcintro.model.CourseConfigDTO;
+import se.kth.iv1351.jdbcintro.model.DTO.ActivityDTO;
+import se.kth.iv1351.jdbcintro.model.DTO.CourseConfigDTO;
 
 public class UniversityDAO {
     private final Connection connection;
@@ -41,6 +41,19 @@ public class UniversityDAO {
     public UniversityDAO(Connection connection) throws SQLException {
         this.connection = connection;
         prepareStatements();
+    }
+
+    // Transaction management methods (called by Model layer)
+    public void commit() throws SQLException {
+        connection.commit();
+    }
+
+    public void rollback() {
+        try {
+            connection.rollback();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void prepareStatements() throws SQLException {
