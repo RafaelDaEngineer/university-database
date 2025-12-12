@@ -9,10 +9,10 @@ public class DBHandler {
     // Change to match own DB setup if needed
     // Current setup for our dockerized Postgres:
     private static final String DB_HOST = "localhost";  // or "127.0.0.1"
-    private static final String DB_PORT = "5433";       // or "5433" if mapped differently
+    private static final String DB_PORT = "5432";       // or "5433" if mapped differently
     private static final String DB_NAME = "university_db";
-    private static final String DB_USER = "postgres";
-    private static final String DB_PASS = "postgres";   // Your container password
+    private static final String DB_USER = "aryan";
+    private static final String DB_PASS = "";   // Your container password
 
     private static final String DB_URL =
             "jdbc:postgresql://" + DB_HOST + ":" + DB_PORT + "/" + DB_NAME;

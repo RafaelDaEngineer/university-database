@@ -283,7 +283,10 @@ public class UniversityDAO {
     public void deleteAllocation(int employmentId, int instanceId) throws SQLException {
         deleteAllocationStmt.setInt(1, employmentId);
         deleteAllocationStmt.setInt(2, instanceId);
-        deleteAllocationStmt.executeUpdate();
+        int rowsAffected = deleteAllocationStmt.executeUpdate();
+        if (rowsAffected == 0) {
+            throw new SQLException("Could not deallocate teacher: No allocation found for the given teacher and course.");
+        }
     }
 
     // --- TASK 4 METHODS ---
