@@ -36,7 +36,9 @@ CREATE TABLE salary_info (
  salary_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
  start_date TIMESTAMP NOT NULL,
  salary INT NOT NULL, 
- PRIMARY KEY (salary_id)
+ employment_id INT NOT NULL, -- New Column
+ PRIMARY KEY (salary_id),
+ FOREIGN KEY (employment_id) REFERENCES employee(employment_id) -- New FK
 );
 
 CREATE TABLE skill_set (
@@ -66,7 +68,7 @@ CREATE TABLE teaching_activity (
 
 CREATE TABLE course_layout (
  course_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
- course_code VARCHAR(20) NOT NULL UNIQUE,
+ course_code VARCHAR(20) NOT NULL, -- REMOVED 'UNIQUE' to allow versioning
  course_name VARCHAR(100) NOT NULL UNIQUE,
  min_students INT NOT NULL,
  max_students INT NOT NULL,
@@ -105,11 +107,11 @@ CREATE TABLE employee (
  job_id INT NOT NULL,
  department_id INT NOT NULL,
  person_id INT NOT NULL,
- salary_id INT NOT NULL,
+ -- salary_id removed
  PRIMARY KEY (employment_id),
  FOREIGN KEY (job_id) REFERENCES job_title(job_id),
- FOREIGN KEY (person_id) REFERENCES person(person_id),
- FOREIGN KEY (salary_id) REFERENCES salary_info(salary_id)
+ FOREIGN KEY (person_id) REFERENCES person(person_id)
+ -- fk_employee_department and fk_employee_manager_id are added later via ALTER
 );
 
 -- =============================================
@@ -121,14 +123,6 @@ CREATE TABLE course_study (
   instance_id INT NOT NULL,
   PRIMARY KEY (study_period_id, instance_id),
   FOREIGN KEY (study_period_id) REFERENCES study_period(study_period_id),
-  FOREIGN KEY (instance_id) REFERENCES course_instance(instance_id)
-);
-
-CREATE TABLE employee_course (
-  employment_id INT NOT NULL,
-  instance_id INT NOT NULL,
-  PRIMARY KEY (employment_id, instance_id),
-  FOREIGN KEY (employment_id) REFERENCES employee(employment_id),
   FOREIGN KEY (instance_id) REFERENCES course_instance(instance_id)
 );
 
@@ -178,7 +172,7 @@ ALTER TABLE employee
   FOREIGN KEY (manager_id) REFERENCES employee (employment_id);
 
 -- =============================================
--- 6. TRIGGER FOR MAX COURSE LIMIT
+-- 6. TRIGGER FOR MAX COURSE LIMIT (UPDATED)
 -- =============================================
 
 CREATE OR REPLACE FUNCTION check_employee_course_limit()
@@ -186,38 +180,57 @@ RETURNS TRIGGER AS $$
 DECLARE
     current_course_count INT;
     global_max_limit INT;
-    new_course_period_id INT;
+    target_instance_id INT;
+    target_period_id INT;
 BEGIN
-    -- Step 1: Get the global max limit from the CONSTANTS table
+    -- 1. Get limit
     SELECT employee_max_courses INTO global_max_limit
     FROM constants
-    ORDER BY constants_id DESC
-    LIMIT 1;
+    ORDER BY constants_id DESC LIMIT 1;
 
-    -- Step 2: Find the study period of the new course
-    SELECT study_period_id INTO new_course_period_id
+    -- 2. Find the instance_id for the planned activity being inserted
+    SELECT instance_id INTO target_instance_id
+    FROM planned_activity
+    WHERE planned_activity_id = NEW.planned_activity_id;
+
+    -- 3. Find the study period for that instance
+    SELECT study_period_id INTO target_period_id
     FROM course_study
-    WHERE instance_id = NEW.instance_id;
+    WHERE instance_id = target_instance_id;
 
-    -- Step 3: Count existing courses for this employee in this period
-    SELECT COUNT(*)
+    -- 4. Count DISTINCT courses this employee is already active in for this period
+    -- join employee_planned -> planned_activity -> course_study
+    SELECT COUNT(DISTINCT pa.instance_id)
     INTO current_course_count
-    FROM employee_course ec
-    JOIN course_study cs ON ec.instance_id = cs.instance_id
-    WHERE ec.employment_id = NEW.employment_id
-      AND cs.study_period_id = new_course_period_id;
+    FROM employee_planned ep
+    JOIN planned_activity pa ON ep.planned_activity_id = pa.planned_activity_id
+    JOIN course_study cs ON pa.instance_id = cs.instance_id
+    WHERE ep.employment_id = NEW.employment_id
+      AND cs.study_period_id = target_period_id;
 
-    -- Step 4: Check limit
+    -- 5. Check limit (If count is already at max AND this is a NEW course for them)
+    -- ensure we don't block adding a second activity to a course they are ALREADY in.
     IF current_course_count >= global_max_limit THEN
-        RAISE EXCEPTION 'Employee (ID: %) has reached the max course limit (%) for this period.',
-                        NEW.employment_id, global_max_limit;
+        -- Check if the course being added is one they're already in.
+        -- If NOT, then we are trying to exceed the limit.
+        IF target_instance_id NOT IN (
+            SELECT pa.instance_id
+            FROM employee_planned ep
+            JOIN planned_activity pa ON ep.planned_activity_id = pa.planned_activity_id
+            JOIN course_study cs ON pa.instance_id = cs.instance_id
+            WHERE ep.employment_id = NEW.employment_id
+            AND cs.study_period_id = target_period_id
+        ) THEN
+            RAISE EXCEPTION 'Employee % has reached the max limit of % courses.', NEW.employment_id, global_max_limit;
+        END IF;
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
+-- trigger now fires on employee_planned not employee_course
 CREATE TRIGGER enforce_course_limit
-BEFORE INSERT ON employee_course
+BEFORE INSERT ON employee_planned
 FOR EACH ROW
 EXECUTE FUNCTION check_employee_course_limit();
