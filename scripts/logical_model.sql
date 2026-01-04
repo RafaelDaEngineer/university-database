@@ -69,7 +69,7 @@ CREATE TABLE teaching_activity (
 CREATE TABLE course_layout (
  course_id INT GENERATED ALWAYS AS IDENTITY NOT NULL,
  course_code VARCHAR(20) NOT NULL, -- REMOVED 'UNIQUE' to allow versioning
- course_name VARCHAR(100) NOT NULL UNIQUE,
+ course_name VARCHAR(100) NOT NULL, -- also removed UNIQUE
  min_students INT NOT NULL,
  max_students INT NOT NULL,
  hp NUMERIC(2, 1) NOT NULL,
