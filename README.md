@@ -1,6 +1,6 @@
 # University Database
 
-A comprehensive database system for managing university operations including students, courses, instructors, and administrative data.
+A comprehensive database system for managing university operations including students, courses, instructors, and administrative data. 
 
 ## Table of Contents
 - [Overview](#overview)
@@ -120,7 +120,4 @@ git checkout -- filename
 # Update your branch with main
 git merge main
 ```
-
----
-**Last Updated:** [Date]
 
