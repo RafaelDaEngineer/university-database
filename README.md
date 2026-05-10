@@ -15,9 +15,9 @@ This project provides a complete database schema and management system for a uni
 ## Getting Started
 
 ### Prerequisites
-- Database management system (MySQL, PostgreSQL, or similar)
+- Database management system (PostgreSQL)
 - Git for version control
-- Text editor or IDE (VS Code recommended)
+- Text editor or IDE 
 
 ### Installation
 1. Clone the repository
